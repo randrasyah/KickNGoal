@@ -87,3 +87,93 @@
 ![alt text](ss_xml_by_id.png)
 ![alt text](ss_json.png)
 ![alt text](ss_json_by_id.png)
+
+---
+
+## Tugas 4
+
+**1. Apa itu Django AuthenticationForm? Jelaskan kelebihan dan kekurangannya.**
+
+    AuthenticationForm adalah form bawaan django untuk menangani login user. Form ini beda dengan ModelForm karena dia tidak terikat model tertentu tetapi langsung memvalidasi kredensial yang dimasukkan.
+
+    Kelebihan:
+    - Sudah teproteksi terhadap serangan CSRF
+    - Mudah diimplementasikan hanya dengan impor django.contrib.auth.forms
+    - Validasi input salah jelas
+
+    Kekurangan:
+    - Customization terbatar dibanding membuat form sendiri dari awal
+    - Tampilannya dasar sehingga butuh desain CSS lagi sendiri
+    - Hanya untuk login (untuk registrasi dapat menggunakan UserCreationForm)
+
+**2. Apa perbedaan antara autentikasi dan otorisasi? Bagaiamana Django mengimplementasikan kedua konsep tersebut?**
+
+    Autentikasi: proses verifikasi identitas, seperti username dan password. Implementasinya di django menggunakan django.contrib.auth, ada model user yang dilengkapi field bawaan username, password dsb. Fitur bawaan seperti login(), dan authenticate(), dan form seperti AuthenticationForm untuk login dan UserCreationForm untuk regis.
+
+    Otorisasi: proses pemberian hak akses sejauh apa setelah identitas terverifikasi, misal akun user dan admin hak aksesnya berbeda. Implementasinya di django menggunakan Permissions, ada 3 akses dasar yaitu add, change, dan delete. Hak akses lalu dikelompokan kedalam Groups, lalu ada juga penggunaan decorator dan mixin untuk membatasi akses bagi pengguna dengan akses tertentu.
+
+**3. Apa saja kelebihan dan kekurangan session dan cookies dalam konteks menyimpan state di aplikasi web?**
+
+    Cookies (data kecil yang dikirim ke server dan disimpan di browser user)
+
+    Kelebihan:
+    - Data disimpan di client-side sehingga tidak membebani server
+    - Cookies dapat diatur hingga bertahun-tahun di browser user sehingga sangat berguna untuk fitur yang mengingat pilihan biasa kita
+    - Mudah diimplementasikan untuk menyimpan data sederhana
+
+    Kekurangan:
+    - Ukurannya sangat terbatas (4kb) sehingga tidak bisa menyimpan data kompleks
+    - Karena disimpan di client-side, data cookie rentan akan manipulasi dan pencurian
+    - Dapat sedikit menambah overhead pada bandwidth
+
+    Sessions (data pengguna disimpan di sisi server, server membuat id unik dan dikirim dalam bentuk cookie yang disebut session ID)
+
+    Kelebihan:
+    - Keamanan lebih baik karena data sensitif disimpan di server
+    - Kapasitas jauh lebih besar sehingga dapat menyimpan data yang kompleks
+    - Kontrol penuh di server
+
+    Kekurangan:
+    - Memakan memori di server
+    - Tergantung pada cookie (jika user menonaktifkan cookies, session tidak dapat berfungsi)
+    - Kompleksitas dalam distribusi agar dapat konsisten di semua server
+
+**4. Apakah penggunaan cookies aman secara default dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?**
+
+    Tidak, cookie sangat rentan terhadap resiko keamanan seperti:
+
+    - Hijacking: dilakukan ketika seseorang berhasil mendapat sesi cookie kita sehingga mereka dapat meniru / mengambil alih sesi kita
+
+    - Manipulasi data: data dalam cookie dapat dengan mudah diubah oleh orang. Misalnya untuk mengubah hak akses.
+
+    - Serangan CSRF: penyerang dapat membuat web dummy berbahaya yang ketika dikunjungi akan membuat browser kita otomatis mengirimkan request ke situs lain yang kita sudah login beserta sesi cookie kita, dari situ mereka dapat melakukan tindakan dengan mengatasnamakan kita.
+
+
+    Cara django menangani: 
+
+    - Django hanya menyimpan session id, bukan data sesi mentah di cookie klien.
+
+    - Cryptographic signing yaitu memberikan tanda tangan kriptografis pada cookies kita agar ketika dimulasi tanda tangan tersebut tidak akan cocok.
+
+    - Proteksi CSRF dengan menanamkan token rahasia yang unik di setiap form POST
+
+**5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step**
+
+    - Saya import UserCreationForm dan messages, lalu membuat fungsi register di views
+    - Saya buat direktori baru dengan nama register.html lalu membuat kode untuk menampilkan halaman registrasi
+    - Saya import fungsi register ke urls dan memasukkan path url ke urlpatterns
+    - Saya import AuthenticationForm, authenticate, dan login, lalu membuat fungsi login di views
+    - Saya buat direktori baru dengan nama login.html lalu membuat kode untuk menampilkan halaman login
+    - Saya import fungsi login ke urls dan memasukkan path url ke urlpatterns
+    - Saya import logout untuk membuat fungsi logout_user dan menambahkan button logout di main.html
+    - Saya import logout_user ke urls dan memasukkan path url ke urlpatterns
+    - Saya tambahkan login_required pada views dengan decorator @login_required(login_url='/login') di show_main dan show_product untuk merestriksi halaman main dan detail produk
+    - Saya import HttpResponseRedirect, reverse, dan datetime untuk menyimpan cookie last_login di fungsi login_user, lalu menambahkan 'last_login': request.COOKIES.get('last_login', 'Never') pada context show_main
+    - Saya ubah fungsi logout_user agar mengahapus cookie last_login ketika keluar
+    - Saya tambahkan informasi sesi terakhir login di main.html
+    - Saya import User pada models dan memasukkan ForeignKey di class Product
+    - Saya ubah fungsi create_product agar objek yang dibuat terikat dengan user yang membuatnya
+    - Saya ubah fungsi show_main agar menampilkan produk sesuai dengan filter yang dipilih (all product atau my product)
+    - Saya tambahkan button pilihan filter di html
+    - Saya runserver dan membuat 2 dummy account
+    - Saya buat 3 dummy product di lokal untuk tiap accountnya
