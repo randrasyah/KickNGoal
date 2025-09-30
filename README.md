@@ -177,3 +177,79 @@
     - Saya tambahkan button pilihan filter di html
     - Saya runserver dan membuat 2 dummy account
     - Saya buat 3 dummy product di lokal untuk tiap accountnya
+
+---
+
+## Tugas 5
+
+**1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!**
+
+    Urutan didasarkan oleh seberapa spesifik selector tersebut, berikut diurutkan dari prioritas tertinggi:
+    1. Inline styles: gaya yang ditulis langsung dalam atribut style 
+    2. ID selector: selector yang menargetkan berdasarkan id unik
+    3. Class, atribute, psuedo-class selectors:
+    4. Element, psuedo-element selectors:
+    
+**2. Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!**
+
+    Responsive design sangat penting dalam pengembangan web untuk membuat tampilan halaman web dapat berubah secara otomatis sesuai dengan ukuran layar device yang sedang digunakan. Dari sisi user, ini akan meningkatkan pengalaman mereka dalam menggunakan websitenya, sementara dari sisi pengembang, ini akan menghemat waktu dan biaya karena kita hanya perlu mengelola satu basis kode saja.
+
+    Contoh aplikasi:
+    Sudah menerapkan: X, pada tampilan web menu lain (seperti notification, explore, etc.) ditaruh disebelah kiri dan di sebelah kanan ditaruh tagar-tagar yang sedang trending. Sementara di mobile, tentu tidak cukup sehingga menu lain ditaruh dibawah dalam bentuk logonya saja tanpa tulisan, serta tagar trending dihilangkan dan hanya muncul di menu explore saja.
+
+    Belum menerapkan: VS Code, tampilan VS Code dedesign untuk tampilan laptop saja dan tidak dapat beradaptasi dengan screen size smartphone.
+
+**3. Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!**
+
+    Padding: Ruang di dalam elemen, antara konten (teks/gambar) dengan border. Jika kita memberikan background-color pada elemen, warna tersebut akan mengisi area konten dan padding.
+
+    Border: Garis yang mengelilingi padding dan konten. Kita bisa mengatur ketebalan, gaya (misalnya, solid, putus-putus), dan warnanya.
+
+    Margin: Ruang di luar elemen, yaitu jarak antara border elemen tersebut dengan elemen lain di sekitarnya. Margin bersifat transparan dan tidak akan terpengaruh oleh background-color elemen.
+
+    Cara implementasi menggunakan contoh:
+    .kotak {
+        /* Padding: 20 pixel di semua sisi (atas, kanan, bawah, kiri) */
+        padding: 20px;
+
+        /* Border: 2 pixel tebalnya, gayanya solid, warnanya hitam */
+        border: 2px solid black;
+
+        /* Margin: 30 pixel di semua sisi */
+        margin: 30px;
+
+        background-color: lightblue; /* Warna ini akan mengisi konten dan padding */
+        width: 200px;
+        height: 100px;
+    }
+
+**4. Jelaskan konsep flex box dan grid layout beserta kegunaannya!**
+
+    Flexbox: didesain untuk layout dalam satu dimensi, baik sebagai baris maupun kolom untuk mendistribusikan ruang dan menyelaraskan item-item dalam sebuah container. Kegunaannya adalah untuk menyusun komponen kecil seperti tombol-tombol di dalam sebuah header, item-item navigasi, atau elemen-elemen di dalam card, membuat elemen-elemen bisa mengisi ruang yang tersedia secara fleksibel, dan menyelaraskan item secara vertikal maupun horizontal dengan mudah (misalnya, membuat konten berada tepat di tengah container).
+
+    Grid Layout: didesain untuk layout dalam dua dimensi secara bersamaan, yaitu baris dan kolom. Grid memungkinkan kita untuk membuat struktur tata letak yang kompleks dan presisi, mirip seperti tabel tetapi jauh lebih kuat dan fleksibel. Kegunaannya adalah untuk tata letak halaman utama secara keseluruhan, seperti membagi halaman menjadi area header, sidebar, konten utama, dan footer, membuat galeri gambar yang rapi, dan menyusun elemen-elemen yang harus sejajar baik secara baris maupun kolom
+
+**5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!**
+
+    - Pertama saya sambungkan template django dengan tailwind dengan menggunakan script CDN
+    - Saya tambahkan fitur edit_product dengan menambahkannya di views, lalu membuat tampilan html nya dengan membuat berkas edit_product.html dan mengisi berkas tersebut, lalu saya masukkan fungsi tersebut ke urls
+    - Saya perbarui template main.html untuk memunculkan tombol edit pada product
+    - Saya tambahkan fitur delete_product dengan menambahkannya di views, lalu membuat tampilan html nya dengan membuat berkas delete_product.html dan mengisi berkas tersebut, lalu saya masukkan fungsi tersebut ke urls
+    - Saya perbarui template main.html untuk memunculkan tombol delete pada product
+    - Saya membuat navigation bar dengan membuat berkas baru navbar.html di folder templates pada main
+    - Saya konfigurasi settings.py untuk bisa memasukkan static files
+        saya tambahkan 'whitenoise.middleware.WhiteNoiseMiddleware', di middleware
+        dan
+        STATIC_URL = '/static/'
+        if DEBUG:
+            STATICFILES_DIRS = [
+                BASE_DIR / 'static' # merujuk ke /static root project pada mode development
+            ]
+        else:
+            STATIC_ROOT = BASE_DIR / 'static'
+    - Saya buat direktori baru static/css/global.css sebagai base style css program
+    - Saya masukkan global.css ke main.html
+    - Saya styling tiap halaman navigation bar, halaman register, halaman home, dan halaman edit product
+    - Saya download file no product found untuk disimpan pada file static image untuk ditampilkan ketika produk belum ada
+    - Saya buat tampilan untuk card dengan membuat berkas baru dengan nama card_news.html untuk dimasukkan ke halaman main
+    - Saya buat tampilan untuk detail produk dengan membuat berkas baru dengan nama product_detail.html
