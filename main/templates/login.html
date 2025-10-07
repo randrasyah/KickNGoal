@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block meta %}
 <title>Login - KickNGoal</title>
@@ -8,37 +9,24 @@
 <div class="bg-gray-50 w-full min-h-screen flex items-center justify-center p-8">
     <div class="max-w-md w-full">
         <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 form-style">
+        
+        <!-- Logo and Header -->
         <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <img src="{% static 'image/logo.png' %}" alt="KickNGoal Logo" class="h-16 w-16">
+            </div>
             <h1 class="text-2xl font-bold text-gray-900 mb-2">Sign In</h1>
-            <p class="text-gray-600">Welcome back to KickNGoal</p>
+            <p class="text-gray-600">Welcome back to <span class="text-green-600 font-semibold">KickNGoal</span></p>
         </div>
 
-        <!-- Form Errors Display -->
-        {% if form.non_field_errors %}
-            <div class="mb-6">
-            {% for error in form.non_field_errors %}
-                <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700">
-                {{ error }}
-                </div>
-            {% endfor %}
+        <!-- Error Display -->
+        <div id="login-error" class="hidden mb-6">
+            <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700">
+                <span id="login-error-message"></span>
             </div>
-        {% endif %}
+        </div>
 
-        {% if form.errors %}
-            <div class="mb-6">
-            {% for field, errors in form.errors.items %}
-                {% if field != '__all__' %}
-                {% for error in errors %}
-                    <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                    <strong>{{ field|title }}:</strong> {{ error }}
-                    </div>
-                {% endfor %}
-                {% endif %}
-            {% endfor %}
-            </div>
-        {% endif %}
-
-        <form method="POST" action="" class="space-y-6">
+        <form id="loginForm" class="space-y-6">
             {% csrf_token %}
             
             <div>
@@ -65,31 +53,11 @@
 
             <button 
             type="submit" 
+            id="loginButton"
             class="w-full bg-green-600 text-white font-medium py-3 px-4 rounded-md hover:bg-green-700 transition-colors">
-            Sign In
+            <span id="loginButtonText">Sign In</span>
             </button>
         </form>
-
-        <!-- Messages Display -->
-        {% if messages %}
-            <div class="mt-6">
-            {% for message in messages %}
-                <div 
-                class="
-                    px-4 py-3 rounded-md text-sm border
-                    {% if message.tags == 'success' %}
-                    bg-green-50 border-green-200 text-green-700
-                    {% elif message.tags == 'error' %}
-                    bg-red-50 border-red-200 text-red-700
-                    {% else %}
-                    bg-gray-50 border-gray-200 text-gray-700
-                    {% endif %}
-                ">
-                {{ message }}
-                </div>
-            {% endfor %}
-            </div>
-        {% endif %}
 
         <div class="mt-6 text-center pt-6 border-t border-gray-200">
             <p class="text-gray-500 text-sm">
@@ -102,4 +70,78 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const loginButton = document.getElementById('loginButton');
+    const loginButtonText = document.getElementById('loginButtonText');
+    const errorDiv = document.getElementById('login-error');
+    const errorMessage = document.getElementById('login-error-message');
+    
+    // Show loading state
+    loginButton.disabled = true;
+    loginButtonText.textContent = 'Signing In...';
+    loginButton.classList.add('opacity-75');
+    errorDiv.classList.add('hidden');
+    
+    try {
+        const formData = new FormData(this);
+        
+        const response = await fetch("{% url 'main:login_user_ajax' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success state
+            loginButton.classList.remove('bg-green-600');
+            loginButton.classList.add('bg-green-700');
+            loginButtonText.textContent = 'Success!';
+            
+            // Show success toast if available
+            if (typeof showToast !== 'undefined') {
+                showToast('Login successful!', 'Welcome back to KickNGoal', 'success');
+            }
+            
+            // Redirect after short delay
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1000);
+        } else {
+            // Show error
+            errorMessage.textContent = data.message;
+            errorDiv.classList.remove('hidden');
+            
+            // Show error toast if available
+            if (typeof showToast !== 'undefined') {
+                showToast('Login failed', data.message, 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        errorMessage.textContent = 'An error occurred. Please try again.';
+        errorDiv.classList.remove('hidden');
+        
+        if (typeof showToast !== 'undefined') {
+            showToast('Login failed', 'Network error. Please try again.', 'error');
+        }
+    } finally {
+        // Reset button state
+        setTimeout(() => {
+            loginButton.disabled = false;
+            loginButton.classList.remove('opacity-75', 'bg-green-700');
+            loginButton.classList.add('bg-green-600');
+            loginButtonText.textContent = 'Sign In';
+        }, 1500);
+    }
+});
+</script>
+
 {% endblock content %}

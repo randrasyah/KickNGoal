@@ -1,10 +1,14 @@
+{% load static %}
 <nav class="fixed top-0 left-0 w-full bg-white border-b border-gray-200 shadow-sm z-50">
 <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
     <div class="flex items-center">
-        <h1 class="text-xl font-semibold text-gray-900">
-        <span class="text-green-600">KickNGoal</span>
-        </h1>
+        <div class="flex items-center space-x-3">
+            <img src="{% static 'image/logo.png' %}" alt="KickNGoal Logo" class="h-8 w-8">
+            <h1 class="text-xl font-semibold text-gray-900">
+                <span class="text-green-600">KickNGoal</span>
+            </h1>
+        </div>
     </div>
     
     <!-- Desktop Navigation -->
@@ -24,9 +28,9 @@
             <div class="text-sm font-medium text-gray-900">{{ name|default:user.username }}</div>
             <div class="text-xs text-gray-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
         </div>
-        <a href="{% url 'main:logout' %}" class="text-red-600 hover:text-red-700 font-medium transition-colors">
-            Logout
-        </a>
+        <button id="desktop-logout-btn" class="text-red-600 hover:text-red-700 font-medium transition-colors">
+            <span id="desktop-logout-text">Logout</span>
+        </button>
         {% else %}
         <a href="{% url 'main:login' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
             Login
@@ -70,9 +74,9 @@
             <div class="font-medium text-gray-900">{{ name|default:user.username }}</div>
             <div class="text-sm text-gray-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
         </div>
-        <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">
-            Logout
-        </a>
+        <button id="mobile-logout-btn" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">
+            <span id="mobile-logout-text">Logout</span>
+        </button>
         {% else %}
         <div class="space-y-3">
             <a href="{% url 'main:login' %}" class="block text-gray-600 hover:text-gray-900 font-medium py-3 transition-colors">
@@ -86,12 +90,93 @@
     </div>
     </div>
 </div>
-<script>
-    const btn = document.querySelector("button.mobile-menu-button");
-    const menu = document.querySelector(".mobile-menu");
 
-    btn.addEventListener("click", () => {
+<script>
+// Mobile menu toggle
+const btn = document.querySelector("button.mobile-menu-button");
+const menu = document.querySelector(".mobile-menu");
+
+btn.addEventListener("click", () => {
     menu.classList.toggle("hidden");
-    });
+});
+
+// AJAX Logout functionality
+async function handleLogout(buttonElement, textElement) {
+    // Show loading state
+    buttonElement.disabled = true;
+    textElement.textContent = 'Logging out...';
+    buttonElement.classList.add('opacity-75');
+    
+    try {
+        const response = await fetch("{% url 'main:logout_user_ajax' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success state
+            textElement.textContent = 'Logged out!';
+            
+            // Show success toast
+            if (typeof showToast !== 'undefined') {
+                showToast('Logout successful!', data.message, 'success');
+            }
+            
+            // Redirect after short delay
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        
+        // Show error toast
+        if (typeof showToast !== 'undefined') {
+            showToast('Logout failed', 'Please try again', 'error');
+        }
+        
+        // Fallback to traditional logout
+        window.location.href = "{% url 'main:logout' %}";
+    } finally {
+        // Reset button state after delay
+        setTimeout(() => {
+            buttonElement.disabled = false;
+            buttonElement.classList.remove('opacity-75');
+            textElement.textContent = 'Logout';
+        }, 2000);
+    }
+}
+
+// Add event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Desktop logout button
+    const desktopLogoutBtn = document.getElementById('desktop-logout-btn');
+    const desktopLogoutText = document.getElementById('desktop-logout-text');
+    
+    if (desktopLogoutBtn && desktopLogoutText) {
+        desktopLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleLogout(desktopLogoutBtn, desktopLogoutText);
+        });
+    }
+    
+    // Mobile logout button
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+    const mobileLogoutText = document.getElementById('mobile-logout-text');
+    
+    if (mobileLogoutBtn && mobileLogoutText) {
+        mobileLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleLogout(mobileLogoutBtn, mobileLogoutText);
+        });
+    }
+});
 </script>
 </nav>
