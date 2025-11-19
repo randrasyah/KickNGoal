@@ -318,3 +318,31 @@ def logout_user_ajax(request):
             'success': False,
             'message': 'User not authenticated'
         }, status=400)
+
+
+@csrf_exempt
+def show_json_filtered(request):
+    if request.user.is_authenticated:
+        product_list = Product.objects.filter(user=request.user)
+    else:
+        product_list = Product.objects.none()
+
+    data = [
+        {
+            'id': str(product.id),
+            'name': product.name,
+            'price': product.price,
+            'description': product.description,
+            'category': product.category,
+            'thumbnail': product.thumbnail,
+            'product_views': product.product_views,
+            'created_at': product.created_at.isoformat() if product.created_at else None,
+            'stock': product.stock,
+            'brand': product.brand,
+            'is_featured': product.is_featured,
+            'user_id': product.user_id,
+        }
+        for product in product_list
+    ]
+    
+    return JsonResponse(data, safe=False)
